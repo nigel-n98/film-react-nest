@@ -33,14 +33,16 @@ export class FilmsService {
   async getSchedule(id: string): Promise<FilmScheduleResponseDto> {
     const film = await this.filmsRepository.findById(id);
 
-    const items: ScheduleDto[] = film.schedule.map((schedule) => ({
+    const schedules = film.schedules;
+
+    const items: ScheduleDto[] = schedules.map((schedule) => ({
       id: schedule.id,
       daytime: schedule.daytime,
       hall: String(schedule.hall),
       rows: schedule.rows,
       seats: schedule.seats,
       price: schedule.price,
-      taken: schedule.taken,
+      taken: schedule.taken ?? [],
     }));
 
     return {
