@@ -1,0 +1,87 @@
+services:
+  db:
+    image: postgres:15
+    container_name: film-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: filmdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - film-network
+
+  backend:
+    build:
+      context: ./backend
+    image: ghcr.io/nigel-n98/film-backend:latest
+    container_name: film-backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: filmdb
+    expose:
+      - "3000"
+    networks:
+      - film-network
+
+  frontend:
+    build:
+      context: ./frontend
+    image: ghcr.io/nigel-n98/film-frontend:latest
+    container_name: film-frontend-builder
+    volumes:
+      - frontend_dist:/frontend_dist
+    depends_on:
+      - backend
+    networks:
+      - film-network
+
+  nginx:
+    build:
+      context: ./nginx
+    image: ghcr.io/nigel-n98/film-nginx:latest
+    container_name: film-nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - frontend_dist:/usr/share/nginx/html
+    networks:
+      - film-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: film-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - film-network
+
+volumes:
+  postgres_data:
+  frontend_dist:
+  pgadmin_data:
+
+networks:
+  film-network:
+    driver: bridge

@@ -30,7 +30,8 @@ import { OrderModule } from './order/order.module';
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         autoLoadEntities: true,
-        synchronize: false,
+        // synchronize: false,
+        synchronize: true,
       }),
     }),
 
