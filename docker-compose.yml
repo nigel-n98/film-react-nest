@@ -9,10 +9,13 @@ services:
       POSTGRES_DB: filmdb
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
       - film-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -20,14 +23,16 @@ services:
     image: ghcr.io/nigel-n98/film-backend:latest
     container_name: film-backend
     restart: always
-    depends_on:
-      - db
     environment:
+      NODE_ENV: production
       DATABASE_HOST: db
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_NAME: filmdb
+    depends_on:
+      db:
+        condition: service_healthy
     expose:
       - "3000"
     networks:
@@ -36,26 +41,30 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
     image: ghcr.io/nigel-n98/film-frontend:latest
     container_name: film-frontend-builder
+    restart: "no"
+    command: ["sh", "-c", "echo Frontend build completed"]
     volumes:
-      - frontend_dist:/frontend_dist
-    depends_on:
-      - backend
+      - frontend_dist:/app/dist
     networks:
       - film-network
 
   nginx:
     build:
-      context: ./nginx
+      context: .
+      dockerfile: nginx/Dockerfile
     image: ghcr.io/nigel-n98/film-nginx:latest
     container_name: film-nginx
     restart: always
     ports:
       - "80:80"
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_completed_successfully
     volumes:
       - frontend_dist:/usr/share/nginx/html
     networks:
@@ -71,7 +80,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
@@ -79,8 +89,8 @@ services:
 
 volumes:
   postgres_data:
-  frontend_dist:
   pgadmin_data:
+  frontend_dist:
 
 networks:
   film-network:

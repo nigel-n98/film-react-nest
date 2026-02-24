@@ -12,9 +12,7 @@ describe('JsonLogger', () => {
   });
 
   it('should log message in JSON format', () => {
-    const consoleSpy = jest
-      .spyOn(console, 'log')
-      .mockImplementation(() => {});
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
     logger.log('test message', 'TestContext');
 

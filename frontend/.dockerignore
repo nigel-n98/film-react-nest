@@ -1,6 +1,12 @@
 node_modules
 dist
+coverage
+storybook-static
 .git
 .gitignore
-Dockerfile
-npm-debug.log
+.env
+.env.*
+*.log
+.template
+.storybook
+README.md

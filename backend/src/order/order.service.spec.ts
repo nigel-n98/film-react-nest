@@ -1,22 +1,3 @@
-// import { Test, TestingModule } from '@nestjs/testing';
-// import { OrderService } from './order.service';
-
-// describe('OrderService', () => {
-//   let service: OrderService;
-
-//   beforeEach(async () => {
-//     const module: TestingModule = await Test.createTestingModule({
-//       providers: [OrderService],
-//     }).compile();
-
-//     service = module.get<OrderService>(OrderService);
-//   });
-
-//   it('should be defined', () => {
-//     expect(service).toBeDefined();
-//   });
-// });
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderService } from './order.service';
 import { FilmsRepository } from '../repository/films.repository';
@@ -69,11 +50,7 @@ describe('OrderService', () => {
 
     const result = await service.create(dto);
 
-    expect(repository.reserveSeat).toHaveBeenCalledWith(
-      '1',
-      '1',
-      '2:3',
-    );
+    expect(repository.reserveSeat).toHaveBeenCalledWith('1', '1', '2:3');
 
     expect(result.total).toBe(1);
     expect(result.items).toHaveLength(1);

@@ -12,9 +12,9 @@ describe('TskvLogger', () => {
   });
 
   it('should log message in TSKV format', () => {
-    const spy = jest.spyOn(console, 'log').mockImplementation();
+    const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-    logger.log('test message', 'TestContext');
+    logger.log('test message', 'TestContext', 'extra1', 'extra2');
 
     expect(spy).toHaveBeenCalledTimes(1);
 
@@ -23,14 +23,16 @@ describe('TskvLogger', () => {
     expect(logged).toContain('level=log');
     expect(logged).toContain('message=test message');
     expect(logged).toContain('context=TestContext');
+    expect(logged).toContain('meta0=extra1');
+    expect(logged).toContain('meta1=extra2');
     expect(logged).toContain('timestamp=');
     expect(logged.endsWith('\n')).toBe(true);
   });
 
   it('should call console.error for error level', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation();
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    logger.error('error message', 'stacktrace', 'ErrorContext');
+    logger.error('error message', 'stacktrace', 'ErrorContext', 'extra');
 
     expect(spy).toHaveBeenCalledTimes(1);
 
@@ -40,5 +42,8 @@ describe('TskvLogger', () => {
     expect(logged).toContain('message=error message');
     expect(logged).toContain('trace=stacktrace');
     expect(logged).toContain('context=ErrorContext');
+    expect(logged).toContain('meta0=extra');
+    expect(logged).toContain('timestamp=');
+    expect(logged.endsWith('\n')).toBe(true);
   });
 });

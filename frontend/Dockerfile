@@ -1,4 +1,5 @@
-FROM node:20-alpine
+# ---------- Stage 1: Build ----------
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -8,7 +9,10 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# volume точка назначения
-VOLUME ["/frontend_dist"]
 
-CMD ["sh", "-c", "cp -r dist/* /frontend_dist/"]
+# ---------- Stage 2: Export build ----------
+FROM alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist

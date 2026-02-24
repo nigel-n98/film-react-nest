@@ -1,0 +1,12 @@
+backend
+frontend
+.git
+.gitignore
+node_modules
+.env
+.env.*
+docker-compose.yml
+film.postman.json
+film.yml
+README.md
+.github

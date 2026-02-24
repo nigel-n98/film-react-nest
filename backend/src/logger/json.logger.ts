@@ -4,7 +4,7 @@ type LogLevel = 'log' | 'error' | 'warn' | 'debug' | 'verbose';
 
 interface JsonLogRecord {
   level: LogLevel;
-  message: string;
+  message: unknown;
   timestamp: string;
   context?: string;
   meta?: unknown[];
@@ -15,57 +15,69 @@ export class JsonLogger implements LoggerService {
   private formatMessage(
     level: LogLevel,
     message: unknown,
-    context?: string,
-    meta?: unknown[],
+    optionalParams: unknown[],
   ): string {
     const record: JsonLogRecord = {
       level,
-      message: this.stringify(message),
+      message,
       timestamp: new Date().toISOString(),
     };
+
+    const { context, meta } = this.extractParams(level, optionalParams);
 
     if (context) {
       record.context = context;
     }
 
-    if (meta && meta.length > 0) {
+    if (meta.length > 0) {
       record.meta = meta;
     }
 
     return JSON.stringify(record);
   }
 
-  private stringify(value: unknown): string {
-    if (typeof value === 'string') {
-      return value;
+  private extractParams(
+    level: LogLevel,
+    optionalParams: unknown[],
+  ): { context?: string; meta: unknown[] } {
+    if (optionalParams.length === 0) {
+      return { meta: [] };
     }
 
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return String(value);
+    if (level === 'error') {
+      const [trace, context, ...rest] = optionalParams;
+
+      return {
+        context: typeof context === 'string' ? context : undefined,
+        meta: trace ? [trace, ...rest] : rest,
+      };
     }
+
+    const [context, ...rest] = optionalParams;
+
+    return {
+      context: typeof context === 'string' ? context : undefined,
+      meta: rest,
+    };
   }
 
-  log(message: unknown, context?: string): void {
-    console.log(this.formatMessage('log', message, context));
+  log(message: unknown, ...optionalParams: unknown[]): void {
+    console.log(this.formatMessage('log', message, optionalParams));
   }
 
-  error(message: unknown, trace?: string, context?: string): void {
-    console.error(
-      this.formatMessage('error', message, context, trace ? [trace] : undefined),
-    );
+  error(message: unknown, ...optionalParams: unknown[]): void {
+    console.error(this.formatMessage('error', message, optionalParams));
   }
 
-  warn(message: unknown, context?: string): void {
-    console.warn(this.formatMessage('warn', message, context));
+  warn(message: unknown, ...optionalParams: unknown[]): void {
+    console.warn(this.formatMessage('warn', message, optionalParams));
   }
 
-  debug(message: unknown, context?: string): void {
-    console.debug(this.formatMessage('debug', message, context));
+  debug(message: unknown, ...optionalParams: unknown[]): void {
+    console.debug(this.formatMessage('debug', message, optionalParams));
   }
 
-  verbose(message: unknown, context?: string): void {
-    console.log(this.formatMessage('verbose', message, context));
+  verbose(message: unknown, ...optionalParams: unknown[]): void {
+    console.log(this.formatMessage('verbose', message, optionalParams));
   }
 }
