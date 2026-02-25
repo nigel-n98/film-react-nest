@@ -1,2 +1,23 @@
+# Node
 node_modules
+dist
+coverage
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# IDE
 .idea
+.vscode
+
+# Temporary
+*.local

@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+storybook-static
+.git
+.gitignore
+.env
+.env.*
+*.log
+.template
+.storybook
+README.md

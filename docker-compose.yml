@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:15
+    container_name: film-db
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - film-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ghcr.io/nigel-n98/film-backend:latest
+    container_name: film-backend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "3000"
+    networks:
+      - film-network
+
+  frontend:
+    image: ghcr.io/nigel-n98/film-frontend:latest
+    container_name: film-frontend-builder
+    restart: "no"
+    volumes:
+      - frontend_dist:/output
+    networks:
+      - film-network
+
+  nginx:
+    image: ghcr.io/nigel-n98/film-nginx:latest
+    container_name: film-nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - frontend_dist:/usr/share/nginx/html
+    networks:
+      - film-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: film-pgadmin
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - film-network
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  frontend_dist:
+
+networks:
+  film-network:
+    driver: bridge
