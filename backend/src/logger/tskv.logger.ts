@@ -31,7 +31,7 @@ export class TskvLogger implements LoggerService {
 
     return (
       Object.entries(record)
-        .map(([key, value]) => `${key}=${value}`)
+        .map(([key, value]) => `${this.sanitizeKey(key)}=${this.sanitizeValue(value)}`)
         .join('\t') + '\n'
     );
   }
@@ -72,6 +72,16 @@ export class TskvLogger implements LoggerService {
     } catch {
       return String(value);
     }
+  }
+
+  private sanitizeValue(value: string): string {
+    return value
+      .replace(/\t/g, '\\t')
+      .replace(/\n/g, '\\n');
+  }
+
+  private sanitizeKey(key: string): string {
+    return key.replace(/[=\t\n]/g, '');
   }
 
   log(message: unknown, ...optionalParams: unknown[]): void {

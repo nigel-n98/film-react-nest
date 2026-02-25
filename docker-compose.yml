@@ -41,13 +41,11 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
     image: ghcr.io/nigel-n98/film-frontend:latest
     container_name: film-frontend-builder
     restart: "no"
-    command: ["sh", "-c", "echo Frontend build completed"]
     volumes:
-      - frontend_dist:/app/dist
+      - frontend_dist:/output
     networks:
       - film-network
 
@@ -61,10 +59,8 @@ services:
     ports:
       - "80:80"
     depends_on:
-      backend:
-        condition: service_started
-      frontend:
-        condition: service_completed_successfully
+      - backend
+      - frontend
     volumes:
       - frontend_dist:/usr/share/nginx/html
     networks:
