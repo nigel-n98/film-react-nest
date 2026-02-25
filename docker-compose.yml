@@ -3,33 +3,26 @@ services:
     image: postgres:15
     container_name: film-db
     restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: filmdb
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - film-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   backend:
-    build:
-      context: ./backend
     image: ghcr.io/nigel-n98/film-backend:latest
     container_name: film-backend
     restart: always
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_NAME: filmdb
     depends_on:
       db:
         condition: service_healthy
@@ -39,8 +32,6 @@ services:
       - film-network
 
   frontend:
-    build:
-      context: ./frontend
     image: ghcr.io/nigel-n98/film-frontend:latest
     container_name: film-frontend-builder
     restart: "no"
@@ -50,9 +41,6 @@ services:
       - film-network
 
   nginx:
-    build:
-      context: .
-      dockerfile: nginx/Dockerfile
     image: ghcr.io/nigel-n98/film-nginx:latest
     container_name: film-nginx
     restart: always
@@ -70,9 +58,8 @@ services:
     image: dpage/pgadmin4
     container_name: film-pgadmin
     restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+    env_file:
+      - .env
     ports:
       - "8080:80"
     depends_on:
