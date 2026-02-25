@@ -36,6 +36,14 @@ jobs:
           push: true
           tags: ghcr.io/nigel-n98/film-backend:latest
 
+      # Frontend
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ghcr.io/nigel-n98/film-frontend:latest          
+
       # Nginx
       - name: Build and push nginx
         uses: docker/build-push-action@v5
